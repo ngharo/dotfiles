@@ -1,0 +1,72 @@
+# thx stackoverflow
+
+function we_are_in_git_work_tree {
+    git rev-parse --is-inside-work-tree &> /dev/null
+}
+
+function parse_git_branch {
+    if we_are_in_git_work_tree; then
+        local BR=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD 2> /dev/null)
+
+        if [ "$BR" == HEAD ]; then
+            local NM=$(git name-rev --name-only HEAD 2> /dev/null)
+            if [ "$NM" != undefined ]; then
+                echo -n "@$NM"
+            else
+                git rev-parse --short HEAD 2> /dev/null
+            fi
+        else
+            echo -n $BR
+        fi
+    fi
+}
+
+function parse_git_status {
+    if we_are_in_git_work_tree; then
+        local ST=$(git status --short 2> /dev/null)
+
+        if [ -n "$ST" ]; then
+            echo -n " + "
+        else
+            echo -n " - "
+        fi
+    fi
+}
+
+function pwd_depth_limit_2 {
+    if [ "$PWD" = "$HOME" ]; then
+        echo -n "~"
+    else
+        local base1="${PWD##*/}"
+        local dir1="${PWD%/*}"
+        local rs="${dir1##*/}/$base1"
+        if [[ "$PWD" == "/${rs}" ]]; then
+            echo $PWD
+        elif [[ "$PWD" == "${rs}" ]]; then
+            echo $PWD
+        else
+            #echo -e "$COL4*/$COL2_${rs}"
+            echo $PWD| sed -e "s|.*/\(.*/.*\)|\1|"
+        fi
+        #echo ${PWD#*/*/}
+        # pwd | sed -e "s|.*/\(.*/.*\)|\1|"
+    fi
+}
+
+COL1="\[\e[38;5;87m\]"
+COL2="\[\e[38;5;31m\]"
+COL2_="\e[38;5;31m"
+COL3="\[\e[38;5;3m\]"
+COL4="\e[38;5;235m"
+BG="\[\e[40m\]"
+COLCLEAR="\[\e[0m\]"
+
+# export all these for subshells
+export -f parse_git_branch parse_git_status we_are_in_git_work_tree pwd_depth_limit_2
+#export PS1="$BG$COL1\h/$COL3\$?$COL2 \$(pwd_depth_limit_2)$COL1\$(parse_git_status)$COL2\$(parse_git_branch) $COL1>$COLCLEAR$BG "
+export PS1="$BG$COL1\h/$COL3\$?$COL2 \$(parse_git_branch)$COL1\$(parse_git_status)$COL2\$(pwd_depth_limit_2) $COL1>$COLCLEAR$BG "
+export PS2="$COLCLEAR"
+
+# DEBUG is raised after typing command, before execution
+# reset term
+trap "tput sgr0" DEBUG
