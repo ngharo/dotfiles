@@ -1,0 +1,90 @@
+" Shared bundle config:
+filetype off                        " required by Vundle!
+set rtp+=/etc/vim/bundle/vundle
+call vundle#rc('/etc/vim/bundle')   " Use a shared folder instead of ~/.vimrc/bundle
+
+syntax on
+set t_Co=256
+colorscheme nazca
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set pastetoggle=<F12>
+set vb  " Turn on visible bell
+set bs=2
+set nocompatible      " We're running Vim, not Vi!
+set tags=./tags,tags
+set incsearch
+set number
+filetype on           " Enable fieltype detection
+filetype indent on    " Enable filetype-specific indenting
+filetype plugin on    " Enable filetype-specific plugins
+filetype indent on
+au BufNewFile,BufRead *.rhtml set syn=eruby
+au BufNewFile,BufRead *.tpl set ft=html.javascript
+map <F7> =%
+map <C-B> :w !php -l<CR>
+
+"TagExplorer
+let TE_Use_Right_Window = 1
+let TE_Ctags_Path = '/usr/bin/ctags-exuberant'
+
+"MiniBufExplorer
+let g:miniBufExplSplitBelow=0
+
+"Mappings
+"nnoremap :TagExplorer
+"cscope add /var/gcmanage/cscope.out /var/gcmanage
+"cscope add /var/grandcare/cscope.out /var/grandcare
+"set cscopetag
+
+" Tell vim to remember certain things when we exit
+"  '10 : marks will be remembered for up to 10 previously edited files
+"  "100 : will save up to 100 lines for each register
+"  :20 : up to 20 lines of command-line history will be remembered
+"  % : saves and restores the buffer list
+"  n... : where to save the viminfo files
+set viminfo='10,\"2000,:20,%,n~/.viminfo
+
+" when we reload, tell vim to restore the cursor to the saved position
+augroup JumpCursorOnEdit
+ au!
+ autocmd BufReadPost *
+ \ if expand("<afile>:p:h") !=? $TEMP |
+ \ if line("'\"") > 1 && line("'\"") <= line("$") |
+ \ let JumpCursorOnEdit_foo = line("'\"") |
+ \ let b:doopenfold = 1 |
+ \ if (foldlevel(JumpCursorOnEdit_foo) > foldlevel(JumpCursorOnEdit_foo - 1)) |
+ \ let JumpCursorOnEdit_foo = JumpCursorOnEdit_foo - 1 |
+ \ let b:doopenfold = 2 |
+ \ endif |
+ \ exe JumpCursorOnEdit_foo |
+ \ endif |
+ \ endif
+ " Need to postpone using "zv" until after reading the modelines.
+ autocmd BufWinEnter *
+ \ if exists("b:doopenfold") |
+ \ exe "normal zv" |
+ \ if(b:doopenfold > 1) |
+ \ exe "+".1 |
+ \ endif |
+ \ unlet b:doopenfold |
+ \ endif
+augroup END
+
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'tpope/vim-fugitive'
+Plugin 'kien/ctrlp.vim'
+Plugin 'airblade/vim-gitgutter'
+Plugin 'ervandew/supertab'
+Plugin 'godlygeek/tabular'
+Plugin 'gabrielelana/vim-markdown'
+
+" End plugins before here
+call vundle#end()            " required
+filetype plugin indent on    " required
+
+" vim-markdown settings
+let g:markdown_enable_spell_checking = 0
